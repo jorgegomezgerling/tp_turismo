@@ -1,4 +1,13 @@
 import React, { useState } from 'react';
+import {
+  TextField,
+  Button,
+  MenuItem,
+  Typography,
+  Alert,
+  Box,
+  Paper,
+} from '@mui/material';
 
 function FormularioLugar({ onLugarAgregado }) {
   const [nombre, setNombre] = useState('');
@@ -29,50 +38,75 @@ function FormularioLugar({ onLugarAgregado }) {
         return res.json();
       })
       .then(data => {
-        setMensaje('Lugar agregado exitosamente!');
-        onLugarAgregado(); // refresca lista
+        setMensaje({ type: 'success', text: 'Lugar agregado exitosamente!' });
+        onLugarAgregado();
         setNombre('');
         setLat('');
         setLon('');
         setGrupo('cervecerías');
       })
       .catch(() => {
-        setMensaje('Error al agregar lugar');
+        setMensaje({ type: 'error', text: 'Error al agregar lugar' });
       });
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h3>Agregar nuevo lugar</h3>
+    <Paper elevation={3} sx={{ padding: 4, maxWidth: 500, margin: '2rem auto' }}>
+      <Typography variant="h6" gutterBottom>
+        Agregar nuevo lugar
+      </Typography>
 
-      <input
-        type="text"
-        placeholder="Nombre"
-        value={nombre}
-        onChange={e => setNombre(e.target.value)}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Latitud"
-        value={lat}
-        onChange={e => setLat(e.target.value)}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Longitud"
-        value={lon}
-        onChange={e => setLon(e.target.value)}
-        required
-      />
-      <select value={grupo} onChange={e => setGrupo(e.target.value)}>
-        {grupos.map(g => <option key={g} value={g}>{g}</option>)}
-      </select>
-      <button type="submit">Agregar lugar</button>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+      >
+        <TextField
+          label="Nombre"
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          required
+        />
 
-      {mensaje && <p>{mensaje}</p>}
-    </form>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            label="Latitud"
+            value={lat}
+            onChange={e => setLat(e.target.value)}
+            required
+            fullWidth
+          />
+          <TextField
+            label="Longitud"
+            value={lon}
+            onChange={e => setLon(e.target.value)}
+            required
+            fullWidth
+          />
+        </Box>
+
+        <TextField
+          select
+          label="Grupo"
+          value={grupo}
+          onChange={e => setGrupo(e.target.value)}
+        >
+          {grupos.map((g) => (
+            <MenuItem key={g} value={g}>{g}</MenuItem>
+          ))}
+        </TextField>
+
+        <Button variant="contained" type="submit">
+          Agregar lugar
+        </Button>
+
+        {mensaje && (
+          <Alert severity={mensaje.type}>
+            {mensaje.text}
+          </Alert>
+        )}
+      </Box>
+    </Paper>
   );
 }
 

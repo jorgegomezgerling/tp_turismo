@@ -1,9 +1,12 @@
 import LugaresCercanos from './components/LugaresCercanos'
+import { Container } from '@mui/material';
 
 function App() {
   return (
     <div className="App">
-      <LugaresCercanos />
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <LugaresCercanos />
+      </Container>
     </div>
   );
 }

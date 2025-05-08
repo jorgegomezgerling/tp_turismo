@@ -69,12 +69,18 @@ def lugares_cercanos(request):
 
             for lugar_id, distancia in resultados:
                 datos = redis_client.hgetall(lugar_id)
+                pos = redis_client.geopos(f"lugares:{grupo}", lugar_id)[0]
+                lon_lugar, lat_lugar = pos
+
                 lugares_cercanos.append({
                     'id': lugar_id.decode(),
                     'nombre': datos.get(b'nombre', b'').decode(),
                     'grupo': datos.get(b'grupo', b'').decode(),
-                    'distancia': float(distancia)
+                    'distancia': float(distancia),
+                    'lat': float(lat_lugar),
+                    'lon': float(lon_lugar)
                 })
+
 
         return JsonResponse(lugares_cercanos, safe=False)
     
