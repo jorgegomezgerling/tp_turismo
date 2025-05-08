@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import FormularioLugar from './FormularioLugar';
 import MapaLugares from './MapaLugares';
 import {
@@ -16,7 +16,6 @@ import {
 
 import PlaceIcon from '@mui/icons-material/Place';
 
-
 function LugaresCercanos() {
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
@@ -24,16 +23,11 @@ function LugaresCercanos() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
 
-  const buscarLugares = () => {
-    if (!lat || !lon) {
-      setError('Coordenadas incompletas');
-      return;
-    }
-  
+  const buscarLugaresCon = (latitud, longitud) => {
     setCargando(true);
     setError(null);
   
-    fetch(`http://localhost:8000/lugares_cercanos/?lat=${lat}&lon=${lon}`)
+    fetch(`http://localhost:8000/lugares_cercanos/?lat=${latitud}&lon=${longitud}`)
       .then(res => res.json())
       .then(data => {
         setLugares(data);
@@ -46,9 +40,32 @@ function LugaresCercanos() {
   };
   
 
+  const buscarLugares = () => {
+    if (!lat || !lon) {
+      setError('Coordenadas incompletas');
+      return;
+    }
+
+    setCargando(true);
+    setError(null);
+
+    fetch(`http://localhost:8000/lugares_cercanos/?lat=${lat}&lon=${lon}`)
+      .then(res => res.json())
+      .then(data => {
+        setLugares(data);
+        setCargando(false);
+      })
+      .catch(err => {
+        setError('No se pudo obtener los lugares');
+        setCargando(false);
+      });
+  };
+
   return (
     <div>
-      <h2>Lugares cercanos</h2>
+      <Typography variant="h4" gutterBottom align="center">
+        Lugares cercanos
+      </Typography>
 
       <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
@@ -78,35 +95,60 @@ function LugaresCercanos() {
           <Button variant="contained" type="submit">
             Buscar
           </Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => {
+                    const latitud = pos.coords.latitude.toFixed(6);
+                    const longitud = pos.coords.longitude.toFixed(6);
+                    setLat(latitud);
+                    setLon(longitud);
+                    buscarLugaresCon(latitud, longitud);
+                  },
+                  () => {
+                    setError('No se pudo obtener tu ubicación');
+                  }
+                );
+              } else {
+                setError('Geolocalización no soportada');
+              }
+            }}
+          >
+            Usar mi ubicación
+          </Button>
+
         </Box>
 
         {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
       </Paper>
 
-      {cargando && <p>Cargando lugares...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {(!cargando && lugares.length === 0) && <p>No se encontraron lugares</p>}
+      {cargando && <Typography>Cargando lugares...</Typography>}
+      {!cargando && lugares.length === 0 && (
+        <Typography>No se encontraron lugares</Typography>
+      )}
 
-      <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Resultados
-        </Typography>
-
-        <List>
-          {lugares.map((lugar) => (
-            <ListItem key={lugar.id} divider>
-              <ListItemIcon>
-                <PlaceIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary={lugar.nombre}
-                secondary={`${lugar.grupo} – ${lugar.distancia.toFixed(2)} km`}
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
-
+      {lugares.length > 0 && (
+        <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Resultados
+          </Typography>
+          <List>
+            {lugares.map((lugar) => (
+              <ListItem key={lugar.id} divider>
+                <ListItemIcon>
+                  <PlaceIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={lugar.nombre}
+                  secondary={`${lugar.grupo} – ${lugar.distancia.toFixed(2)} km`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      )}
 
       {lugares.length > 0 && (
         <MapaLugares lugares={lugares} centro={{ lat: parseFloat(lat), lon: parseFloat(lon) }} />
