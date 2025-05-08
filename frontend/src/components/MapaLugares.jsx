@@ -1,6 +1,8 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Circle } from 'react-leaflet';
+
 
 // Fix para los íconos que no cargan bien por defecto en Webpack/Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -19,6 +21,21 @@ function MapaLugares({ lugares, centro: centroProps }) {
         attribution='&copy; OpenStreetMap contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {centroProps.lat && centroProps.lon && (
+        <Circle
+          center={[centroProps.lat, centroProps.lon]}
+          radius={5000}
+          pathOptions={{
+            color: '#60a5fa',       
+            fillColor: '#bfdbfe',  
+            fillOpacity: 0.15,
+            weight: 0.8,
+            dashArray: '4,6'
+          }}
+        />
+      )}
+
+
       {lugares.map((lugar) => (
         <Marker
           key={lugar.id}
